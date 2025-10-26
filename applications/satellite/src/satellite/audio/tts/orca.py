@@ -17,9 +17,10 @@ _SENTINEL = object()
 class OrcaTTS:
     """Non-blocking streaming text-to-speech using Picovoice Orca."""
 
-    def __init__(self, access_key: str):
+    def __init__(self, access_key: str, *, output_device: int | str | None = None):
         self.orca = pvorca.create(access_key=access_key)
         self.sample_rate = self.orca.sample_rate
+        self.output_device = output_device
 
         # Threading & queue for background playback
         self.queue: queue.Queue[QueueItem] = queue.Queue()
@@ -79,11 +80,17 @@ class OrcaTTS:
                 pcm: np.ndarray = pcm_int16.astype(np.float32) / 32768.0
 
                 chunk_size = 2048
+                stream_kwargs: dict[str, object] = {
+                    "samplerate": self.sample_rate,
+                    "channels": 1,
+                    "dtype": "float32",
+                    "blocksize": chunk_size,
+                }
+                if self.output_device is not None:
+                    stream_kwargs["device"] = self.output_device
+
                 with sd.OutputStream(
-                    samplerate=self.sample_rate,
-                    channels=1,
-                    dtype="float32",
-                    blocksize=chunk_size,
+                    **stream_kwargs,
                 ) as stream:
                     for i in range(0, len(pcm), chunk_size):
                         if self.stop_flag.is_set():

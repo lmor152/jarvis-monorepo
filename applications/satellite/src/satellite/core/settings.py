@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     channels: int = 1
     chunk_size: int = 1024
     pre_roll_seconds: float = 1.5
+    audio_input_device: int | str | None = None
+    audio_output_device: int | str | None = None
 
     # Voice activity detection (Cobra)
     vad_provider: Literal["picovoice"] = "picovoice"

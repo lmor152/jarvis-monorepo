@@ -90,7 +90,10 @@ class VoiceAssistant:
 
         if settings.tts_provider != "picovoice":
             raise ValueError(f"Unsupported TTS provider: {settings.tts_provider}")
-        self.tts = OrcaTTS(access_key=settings.picovoice_access_key)
+        self.tts = OrcaTTS(
+            access_key=settings.picovoice_access_key,
+            output_device=settings.audio_output_device,
+        )
 
         if settings.vad_provider != "picovoice":
             raise ValueError(f"Unsupported VAD provider: {settings.vad_provider}")
@@ -157,14 +160,40 @@ class VoiceAssistant:
         self.frame_duration = self.frame_length / self.sample_rate
         self.silence_duration = 0.0
 
-        # Input audio stream shared
-        self.stream = sd.InputStream(
-            channels=1,
-            samplerate=self.sample_rate,
-            blocksize=self.frame_length,
-            dtype="float32",
-            callback=self.audio_callback,
-        )
+        if (
+            settings.audio_input_device is not None
+            or settings.audio_output_device is not None
+        ):
+            try:
+                sd.default.device = (
+                    settings.audio_input_device,
+                    settings.audio_output_device,
+                )  # type: ignore[assignment]
+            except Exception as device_error:
+                print(f"⚠️ Unable to set default audio devices: {device_error}")
+
+        stream_kwargs: dict[str, object] = {
+            "channels": 1,
+            "samplerate": self.sample_rate,
+            "blocksize": self.frame_length,
+            "dtype": "float32",
+            "callback": self.audio_callback,
+        }
+
+        if settings.audio_input_device is not None:
+            stream_kwargs["device"] = settings.audio_input_device
+
+        try:
+            self.stream = sd.InputStream(**stream_kwargs)
+        except Exception as exc:
+            device_hint = (
+                f" (device={settings.audio_input_device!r})"
+                if settings.audio_input_device is not None
+                else ""
+            )
+            raise RuntimeError(
+                f"Failed to initialise audio input stream{device_hint}: {exc}"
+            ) from exc
 
         print(
             f"🔊 VoiceAssistant ready: wake={self.wake_keywords}, interrupt='{interrupt_keyword}'"

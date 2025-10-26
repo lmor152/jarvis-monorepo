@@ -4,8 +4,12 @@ WORKDIR /app
 
 RUN apt-get update \
 	&& apt-get install -y --no-install-recommends \
-		libportaudio2 \
+		build-essential \
 		libasound2 \
+		libatlas-base-dev \
+		libportaudio2 \
+		libportaudiocpp0 \
+		portaudio19-dev \
 	&& rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
