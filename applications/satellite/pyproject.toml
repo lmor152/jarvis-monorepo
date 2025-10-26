@@ -1,0 +1,19 @@
+[project]
+name = "satellite"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.13"
+dependencies = [
+    "pvporcupine>=3.0.5",
+    "pvcheetah>=2.0.0",
+    "pvorca>=1.0.0",
+    "sounddevice>=0.5.2",
+    "aiohttp>=3.9.0",
+    "pydantic-settings>=2.0.0",
+    "numpy>=1.24.0",
+    "pvcobra>=2.1.0",
+    "httpx>=0.27.0",
+    "openai>=1.40.0",
+    "pveagle>=1.0.4",
+]
+
