@@ -3,7 +3,7 @@ from typing import Literal
 
 import requests
 
-from applications.assistant.src.assistant.core.settings import settings
+from assistant.core.settings import settings
 
 LOGGER = logging.getLogger(__name__)
 
